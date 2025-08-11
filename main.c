@@ -88,18 +88,25 @@ int main(void)
 
 
             if (Nave_Direccion == 0) {
-                if (Nave_Velocidad < Medida3)  Nave_Velocidad += Medida3;
-                Nave_Velocidad *= 1.03f;
+                //if ((Nave_X + Nave_Desplazamiento) < Nave_X2) {
+              //  if (Nave_Desplazamiento > -Medida3) {
+                        if (Nave_Velocidad < Medida3)  Nave_Velocidad += Medida3;
+                    Nave_Velocidad *= 1.03f;
+                    Nave_Desplazamiento += Medida3;
+                    Nave_Desplazamiento *= 1.02;
+              //  }
             }
             else {
                 if (Nave_Velocidad > -Medida3)  Nave_Velocidad -= Medida3;
                 Nave_Velocidad *= 1.03f;
+                Nave_Desplazamiento -= Medida3;
+                Nave_Desplazamiento *= 1.02;
             }
 
 
-            Nave_Desplazamiento += Medida3;
-            Nave_Desplazamiento *= 1.05;
+            if (Nave_Desplazamiento < -Nave_Desplazamiento_Max) Nave_Desplazamiento = -Nave_Desplazamiento_Max;
             if (Nave_Desplazamiento > Nave_Desplazamiento_Max) Nave_Desplazamiento = Nave_Desplazamiento_Max;
+
 
         }
 
@@ -109,25 +116,38 @@ int main(void)
             } else {
                 Nave_Direccion = 0; // derecha
             }
+            Nave_X += Nave_Desplazamiento*2;
+           // Nave_X += Nave_Desplazamiento;
+
+          //  Nave_Desplazamiento = 0;
+            Nave_Desplazamiento  *= -1;
         }
 
 
         if (Nave_Direccion == 0) {
 
-            if (Nave_X > (Nave_X1 + Nave_Desplazamiento)) {
-                valor2 = ((Nave_X1 + Nave_Desplazamiento) - Nave_X) * 0.02;
+       //     if (Nave_X > (Nave_X1 + Nave_Desplazamiento)) {
+        //        valor2 = ((Nave_X1 + Nave_Desplazamiento) - Nave_X) * 0.02;
+
+              if (Nave_X > Nave_X1) {
+                    //valor2 = (Nave_X1 - Nave_X) * 0.02;
+                    valor2 = ((Nave_X1 - Nave_Desplazamiento) - Nave_X) * 0.03;
                 Nave_X += valor2;
                 Monte_uvx -= (valor2 / Medida);
-            }
+
+              }
 
 
         } else {
 
-            if (Nave_X < (Nave_X3 - Nave_Desplazamiento)) {
-                valor2= ((Nave_X3 - Nave_Desplazamiento) - Nave_X) * 0.02;
-                Nave_X += valor2;
-                Monte_uvx -= (valor2/Medida);
-            }
+       //     if (Nave_X < (Nave_X3 - Nave_Desplazamiento)) {
+        //       valor2 = ( (Nave_X3 - Nave_Desplazamiento) -Nave_X) * 0.02;
+              if (Nave_X < Nave_X3  ) {
+                  valor2 = ((Nave_X3 - Nave_Desplazamiento) - Nave_X) * 0.03;
+                  //  valor2 = (Nave_X3 - Nave_X) * 0.02;
+                    Nave_X += valor2;
+                    Monte_uvx -= (valor2/Medida);
+              }
 
         }
 
@@ -135,7 +155,8 @@ int main(void)
         Nave_Desplazamiento *= 0.98f;
 
         Nave_Velocidad *= 0.99f;
-        if (Nave_Velocidad> Nave_Velocidad_Max) Nave_Velocidad = Nave_Velocidad_Max;
+        if (Nave_Velocidad > Nave_Velocidad_Max) Nave_Velocidad = Nave_Velocidad_Max;
+        if (Nave_Velocidad < -Nave_Velocidad_Max) Nave_Velocidad = -Nave_Velocidad_Max;
 
 
 
@@ -165,10 +186,10 @@ int main(void)
         // Dibuja Nave
         if (Nave_Direccion == 0) {
 //            Imagen_Dibuja(i_sprites, Nave_X + Nave_Desplazamiento, Nave_Y, Nave_Medida, Nave_Medida2, 64, 0, 15, 6, 1, Nave_Direccion);
-            Imagen_Dibuja(i_sprites, Nave_X, Nave_Y, Nave_Medida, Nave_Medida2, 64, 0, 15, 6, 1, Nave_Direccion);
+            Imagen_Dibuja(i_sprites, Nave_X+ Nave_Desplazamiento, Nave_Y, Nave_Medida, Nave_Medida2, 64, 0, 15, 6, 1, Nave_Direccion);
         }
         else {
-            Imagen_Dibuja(i_sprites, Nave_X, Nave_Y, Nave_Medida, Nave_Medida2, 64, 0, 15, 6, 1, Nave_Direccion);
+            Imagen_Dibuja(i_sprites, Nave_X+ Nave_Desplazamiento, Nave_Y, Nave_Medida, Nave_Medida2, 64, 0, 15, 6, 1, Nave_Direccion);
         }
 
         // Marcadores
@@ -177,13 +198,15 @@ int main(void)
         // Limites para nave
         DrawLine(Nave_X1, 0, Nave_X1, Pantalla_Alto, RED);
         DrawLine(Nave_X2, 0, Nave_X2, Pantalla_Alto, RED);
-        DrawLine(Nave_X3, 0, Nave_X3, Pantalla_Alto, RED);
+        DrawLine(Nave_X3, 0, Nave_X3, Pantalla_Alto, BLUE);
         DrawLine(Nave_X4, 0, Nave_X4, Pantalla_Alto, RED);
 
         // Mascara
         DrawRectangle(0, 0, Pantalla_X, Pantalla_Alto, BLACK);
         DrawRectangle(Pantalla_X2, 0, Pantalla_X, Pantalla_Alto, BLACK);
 
+
+        DrawText(TextFormat("Nave_Desplazamiento %f", Nave_Desplazamiento), 10, 10, 30, WHITE);
 
 
         EndDrawing();
