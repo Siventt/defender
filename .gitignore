@@ -4,3 +4,4 @@
 *.user
 Defender/
 x64/
+/main.c
