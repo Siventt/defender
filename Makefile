@@ -2,7 +2,7 @@
 RAYLIB ?= ../raylib/src/
 
 all:	
-	cc -o defender src/defender.c -I $(RAYLIB) -I/opt/vc/include -L $(RAYLIB) -L/opt/vc/lib -lraylib -lm -lpthread -lbrcmGLESv2 -lbrcmEGL -lvcos -lvchiq_arm -lbcm_host
+	cc -o defender src/defender.c -Wall -std=c99 -D_DEFAULT_SOURCE -Wno-missing-braces -Wno-unused-result -O2 -std=gnu99 -DEGL-NO_X11 -I. -I$(RAYLIB) -I$(RAYLIB)/external -I/usr/local/include -I/usr/include/libdrm -L. -L$(RAYLIB) -lraylib -lGLESv2 -lEGL -ldrm -lgbm -lgbm -lpthread -lrt -lm -ldl -latomic -DPLATFORM_DRM
 	
 	# Para Linux x64
 	#gcc -o defender src/defender.c -I $(RAYLIB) -L $(RAYLIB) -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
