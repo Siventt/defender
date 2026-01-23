@@ -6,7 +6,6 @@
 
 #pragma region DeclaracionesAdelantadas
 
-#define PI 3.1416
 #define bool int
 #define true 1
 #define false 0
@@ -387,8 +386,10 @@ int main(void)
     // No afecta a todo, la mejor opcion es FXAA con shaders
     // Pero realmente hace falta? Con pixelado no hay diagonales que suavizar
 
-    InitWindow(1920, 1080, "Defender");
-    // ToggleBorderlessWindowed();
+    InitWindow(0, 0, "Defender");
+    
+    ToggleBorderlessWindowed();
+    //ToggleFullscreen();
     ClearWindowState(FLAG_WINDOW_TOPMOST);
     SetTargetFPS(60);
     HideCursor();
