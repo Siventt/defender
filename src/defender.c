@@ -1,12 +1,12 @@
 ﻿//#include "raymob.h"
-#include "raylib.h"
+#include <raylib.h>
 #include <stdio.h>  // Para sprintf
 #include <math.h> // angulos joystick
 #include "paleta.h" // colores
 
 #pragma region DeclaracionesAdelantadas
 
-#define bool int
+//#define bool int
 #define true 1
 #define false 0
 
@@ -280,8 +280,8 @@ static int Tile_N;
 int Tile[130][5];
 int Suelo[130][6];
 int Atlas[160][2];
-#define STORAGE_DATA_FILE   "nivel.dat" // Archivo para tileado
-#define STORAGE_DATA_FILE2  "juego.dat" // Archivo para tabla de records, datos ...
+#define STORAGE_DATA_FILE   ASSETS_PATH"nivel.dat" // Archivo para tileado
+#define STORAGE_DATA_FILE2  ASSETS_PATH"juego.dat" // Archivo para tabla de records, datos ...
 
 
 
@@ -396,27 +396,28 @@ int main(void)
 
     Inicia_Variables();
     Reinicia_Variables();
-
-    Font fuente = LoadFont("res/i_fuente.png");
-    Texture2D i_sprites = LoadTexture("res/i_sprites.png");
-
+    
     InitAudioDevice();
 
-    Sound s_abduce = LoadSound("res/sounds/s_abduce.wav");
-    Sound s_bomba = LoadSound("res/sounds/s_bomba.wav");
-    Sound s_bombardero = LoadSound("res/sounds/s_bombardero.wav");
-    Sound s_caida = LoadSound("res/sounds/s_caida.wav");
-    Sound s_comenzar = LoadSound("res/sounds/s_comenzar.wav");
-    Sound s_explosion = LoadSound("res/sounds/s_explosion.wav");
-    Sound s_humanoide = LoadSound("res/sounds/s_humanoide.wav");
-    Sound s_implosion = LoadSound("res/sounds/s_implosion.wav");
-    Sound s_inicio = LoadSound("res/sounds/s_inicio.wav");
-    Sound s_laser = LoadSound("res/sounds/s_laser.wav");
-    Sound s_libera = LoadSound("res/sounds/s_libera.wav");
-    Sound s_oleada = LoadSound("res/sounds/s_oleada.wav");
-    Sound s_pod = LoadSound("res/sounds/s_pod.wav");
-    Sound s_proyectil = LoadSound("res/sounds/s_proyectil.wav");
-    Sound s_puntos = LoadSound("res/sounds/s_puntos.wav");
+    // ASSETS_PATH es una macro definida en CMakeLists.txt para crear una ruta dinámica.
+    Font fuente = LoadFont(ASSETS_PATH"i_fuente.png");
+    Texture2D i_sprites = LoadTexture(ASSETS_PATH"i_sprites.png");
+
+    Sound s_abduce = LoadSound(ASSETS_PATH"sounds/s_abduce.wav");
+    Sound s_bomba = LoadSound(ASSETS_PATH"sounds/s_bomba.wav");
+    Sound s_bombardero = LoadSound(ASSETS_PATH"sounds/s_bombardero.wav");
+    Sound s_caida = LoadSound(ASSETS_PATH"sounds/s_caida.wav");
+    Sound s_comenzar = LoadSound(ASSETS_PATH"sounds/s_comenzar.wav");
+    Sound s_explosion = LoadSound(ASSETS_PATH"sounds/s_explosion.wav");
+    Sound s_humanoide = LoadSound(ASSETS_PATH"sounds/s_humanoide.wav");
+    Sound s_implosion = LoadSound(ASSETS_PATH"sounds/s_implosion.wav");
+    Sound s_inicio = LoadSound(ASSETS_PATH"sounds/s_inicio.wav");
+    Sound s_laser = LoadSound(ASSETS_PATH"sounds/s_laser.wav");
+    Sound s_libera = LoadSound(ASSETS_PATH"sounds/s_libera.wav");
+    Sound s_oleada = LoadSound(ASSETS_PATH"sounds/s_oleada.wav");
+    Sound s_pod = LoadSound(ASSETS_PATH"sounds/s_pod.wav");
+    Sound s_proyectil = LoadSound(ASSETS_PATH"sounds/s_proyectil.wav");
+    Sound s_puntos = LoadSound(ASSETS_PATH"sounds/s_puntos.wav");
 
     Carga();
     Puntua(fuente, 0); // Renueva datos puntuacion
@@ -1080,6 +1081,7 @@ void Reinicia_Variables() {
 
 }
 
+
 void Tileado_Dibuja(Texture2D i_sprites) {
 
     int i, y, valor;
@@ -1123,9 +1125,6 @@ void Tileado_Dibuja(Texture2D i_sprites) {
     }
 
 }
-
-
-
 
 
 void Imagen_Dibuja(Texture2D i_sprites, int x, int y, int largo, int alto, int uvx, int uvy, int uvlargo, int uvalto, int centrado, int espejo) {
@@ -1670,8 +1669,6 @@ void Nave_Control(int num, Sound s_laser, Sound s_puntos, Sound s_bomba, Sound s
             }
         }
 }
-
-
 
 
 void Dibuja_Regiones() {

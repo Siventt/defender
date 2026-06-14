@@ -1,24 +1,11 @@
 ## One .gitignore to Rule Them All
-## v0.0.1
+## v0.0.2
 
 ## Visual Studio
 
 # Ficheros del projecto
 *.vcxproj
 *.filters
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 # User-specific files
 *.rsuser
@@ -57,9 +44,7 @@ bld/
 
 
 # CLion and CMake
-
 .idea/
-CMakeLists.txt
 build/
 
 # Visual Studio 2015/2017 cache/options directory
