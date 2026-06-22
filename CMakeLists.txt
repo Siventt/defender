@@ -1,14 +1,14 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 project(defender C)
 set(CMAKE_C_STANDARD 99)
 
 # Adding Raylib
 include(FetchContent)
 set(FETCHCONTENT_QUIET FALSE)
-set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE) # don't build the supplied examples
-set(BUILD_GAMES    OFF CACHE BOOL "" FORCE) # don't build the supplied example games
-set(GLFW_BUILD_WAYLAND OFF CACHE BOOL "" FORCE) # enable wayland on linux
-set(GLFW_BUILD_X11 ON CACHE BOOL "" FORCE) # disable x11 on linux (switch these settings around as you please)
+set(BUILD_EXAMPLES     OFF CACHE BOOL "" FORCE) # don't build the supplied examples
+set(BUILD_GAMES        OFF CACHE BOOL "" FORCE) # don't build the supplied example games
+set(GLFW_BUILD_WAYLAND ON  CACHE BOOL "" FORCE) # enable wayland on linux
+set(GLFW_BUILD_X11     OFF CACHE BOOL "" FORCE) # disable x11 on linux (switch these settings around as you please)
 
 FetchContent_Declare(
     raylib
@@ -29,10 +29,9 @@ target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_INCLUDE})
 target_link_libraries(${PROJECT_NAME} PRIVATE raylib)
 
-# Setting ASSETS_PATH
-target_compile_definitions(${PROJECT_NAME} PUBLIC ASSETS_PATH="./assets/") # Set the asset path macro in release mode to a relative path that assumes the assets folder is in the same directory as the game executable
+# Establece la macro ASSETS_PATH como una ruta relativa que asume que la carpeta assets se encuentra en el mismo directorio que el ejecutable
+target_compile_definitions(${PROJECT_NAME} PUBLIC ASSETS_PATH="./assets/")
 
-# Define la carpeta destino para los binarios de este ejecutable
+# Define la carpeta destino para los ejecutables del proyecto
 set_target_properties(${PROJECT_NAME} PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}"
-)
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}")
