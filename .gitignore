@@ -1,6 +1,8 @@
 ## One .gitignore to Rule Them All
 ## v0.0.2
 
+*.elf
+
 ## Visual Studio
 
 # Ficheros del projecto

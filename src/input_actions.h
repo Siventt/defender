@@ -1,0 +1,9 @@
+#define SUBIR        KEY_UP
+#define BAJAR        KEY_DOWN
+#define IZQUIERDA    KEY_LEFT
+#define DERECHA      KEY_RIGHT
+#define ORIENTACION  KEY_X
+#define DISPARAR     KEY_LEFT_CONTROL
+#define BOMBA        KEY_C
+#define HIPERESPACIO KEY_SPACE
+#define SALIR        KEY_ESCAPE

@@ -34,4 +34,6 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC ASSETS_PATH="./assets/")
 
 # Define la carpeta destino para los ejecutables del proyecto
 set_target_properties(${PROJECT_NAME} PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}")
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    OUTPUT_NAME "defender"
+    SUFFIX      ".elf")

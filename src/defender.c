@@ -1,14 +1,11 @@
-﻿//#include "raymob.h"
-#include <raylib.h>
-#include <stdio.h>  // Para sprintf
-#include <math.h> // angulos joystick
+﻿#include <stdio.h>
+#include <math.h>   // angulos joystick
+#include <raylib.h> // incluye <stdbool.h>
+//#include <raymob.h>
 #include "paleta.h" // colores
+#include "input_actions.h"
 
 #pragma region DeclaracionesAdelantadas
-
-//#define bool int
-#define true 1
-#define false 0
 
 // ----------------------------------------------------------------------------
 // Dispositivo
@@ -29,6 +26,7 @@ static int Mundo_Aniquilado = 0;
 static int Pantalla_BombaT;
 */
 
+
 // ----------------------------------------------------------------------------
 // Medidas
 // ----------------------------------------------------------------------------
@@ -44,10 +42,8 @@ static int Radar_X, Radar_Largo, Radar_Alto,
 static int IndiceX;
 float Medidas[15];
 
-
-
-
 //static int casillax, casillay;
+
 
 // ------------------------------------------------------------------------------------------
 // Nave Principal
@@ -86,6 +82,7 @@ int TR_Puntuacion[9] = { 21270,18315,15920,14285,12520,11035,8265,6010 };
 
 //static int distante;
 
+
 // ------------------------------------------------------------------------------------------
 // Enemigos
 // ------------------------------------------------------------------------------------------
@@ -95,7 +92,7 @@ static int old_lander = 0, old_mutante = 0, old_baiter = 0, old_pod = 0, old_bom
 
 // *** CAMBIA SEGUN FASE ***
 static float Enemigo_Datos[7][4]; // num - 0-Velocidad de disparo  1-Velocidad enemigo
-static int Enemigo_Datos2[7][4]; // num - 0-cadencia empieza  1-cadencia fin  2-cadencia disparo
+static int Enemigo_Datos2[7][4];  // num - 0-cadencia empieza  1-cadencia fin  2-cadencia disparo
 
 #define Enemigos_Maximos 50
 typedef struct {
@@ -143,7 +140,6 @@ Humanoide humanoides[Humanoides_Maximos];
 static int Humanoide_Abducido, Enemigo_Abductor, Humanoide_ID, Enemigo_ID, Humanoides_R, Humanoides_Abduccion_X, Humanoides_Abduccion_Y, Humanoide_Enganchado;
 
 
-
 // ------------------------------------------------------------------------------------------
 // Disparos Laser Nave Jugador
 // ------------------------------------------------------------------------------------------
@@ -153,7 +149,6 @@ typedef struct {
     bool activo;
 } Disparo;
 Disparo disparo[Disparos_Maximos];
-
 
 
 // ------------------------------------------------------------------------------------------
@@ -167,7 +162,6 @@ typedef struct {
     bool activo;
 } Proyectil;
 Proyectil proyectil[Proyectiles_Maximos];
-
 
 
 // ------------------------------------------------------------------------------------------
@@ -191,7 +185,7 @@ int Ola[5][30] = {
 int Ola_Fin[5] = { 20,24,27,29,29 };
 
 
-#define MAX_TEXTOS   25
+#define MAX_TEXTOS 25
 static char* textos[MAX_TEXTOS] = { "ATTACK WAVE  ",
                                     "COMPLETED",
                                     "BONUS X 100",
@@ -206,7 +200,7 @@ static char* textos[MAX_TEXTOS] = { "ATTACK WAVE  ",
                                     "POD",
                                     "SWARMER",
                                     "SCANNER",
-                                    "JOSE LORENZO",//"ELECTRONICS INC.",
+                                    "JOSE LORENZO & BORJA BORDAL",//"ELECTRONICS INC.",
                                     "PRESENTS",
                                     "GAME OVER",
                                     "PRESS TO PLAY",
@@ -222,7 +216,6 @@ int Iniciales_Posicion[3];
 
 int Iniciales_Medida; // Medida recuadro android iniciales de texto
 int InicialesX;
-
 
 
 // ------------------------------------------------------------------------------------------
@@ -251,7 +244,6 @@ typedef struct {
 Particula particulas[Particulas_Maximas];
 
 
-
 // ------------------------------------------------------------------------------------------
 // Explosiones e Implosiones
 // ------------------------------------------------------------------------------------------
@@ -265,12 +257,10 @@ typedef struct {
 Explosion explosiones[Explosiones_Maximas];
 
 
-
 // ------------------------------------------------------------------------------------------
 // Bomba Inteligente / Mundo Explota
 // ------------------------------------------------------------------------------------------
 static int Pantalla_Bomba, Pantalla_Bomba_Modo, Pantalla_BombaC, Pantalla_BombaCF, Pantalla_BombaM, Mundo_Destruido, Mundo_Aniquilado, Pantalla_BombaT, Pantalla_BombaE;
-
 
 
 // ------------------------------------------------------------------------------------------
@@ -284,18 +274,12 @@ int Atlas[160][2];
 #define STORAGE_DATA_FILE2  ASSETS_PATH"juego.dat" // Archivo para tabla de records, datos ...
 
 
-
-
 // ------------------------------------------------------------------------------------------
 // Controles
 // ------------------------------------------------------------------------------------------
 int JRegion[7][4];
 static int PalancaX, PalancaY, PalancaM, PalancaD, PalancaO, PalancaA, BolaM, BolaR, BolaX, BolaY;
 int Palanca_Boton[7] = { 0 };
-
-
-
-
 
 
 //------------------------------------------------------------------------------------
@@ -379,30 +363,20 @@ static Vector2 touchPositions[MAX_TOUCH_POINTS] = { 0 };
 //-----------------------------------------------------------------------------
 int main(void)
 {
-    // Inicialización
-    //-------------------------------------------------------------------------
-
     //SetConfigFlags(FLAG_MSAA_4X_HINT);
     // No afecta a todo, la mejor opcion es FXAA con shaders
     // Pero realmente hace falta? Con pixelado no hay diagonales que suavizar
-
     InitWindow(0, 0, "Defender");
-    
     ToggleBorderlessWindowed();
     //ToggleFullscreen();
     ClearWindowState(FLAG_WINDOW_TOPMOST);
     SetTargetFPS(60);
     HideCursor();
-
-    Inicia_Variables();
-    Reinicia_Variables();
-    
     InitAudioDevice();
 
     // ASSETS_PATH es una macro definida en CMakeLists.txt para crear una ruta dinámica.
     Font fuente = LoadFont(ASSETS_PATH"i_fuente.png");
     Texture2D i_sprites = LoadTexture(ASSETS_PATH"i_sprites.png");
-
     Sound s_abduce = LoadSound(ASSETS_PATH"sounds/s_abduce.wav");
     Sound s_bomba = LoadSound(ASSETS_PATH"sounds/s_bomba.wav");
     Sound s_bombardero = LoadSound(ASSETS_PATH"sounds/s_bombardero.wav");
@@ -419,6 +393,9 @@ int main(void)
     Sound s_proyectil = LoadSound(ASSETS_PATH"sounds/s_proyectil.wav");
     Sound s_puntos = LoadSound(ASSETS_PATH"sounds/s_puntos.wav");
 
+    Inicia_Variables();
+    Reinicia_Variables();
+
     Carga();
     Puntua(fuente, 0); // Renueva datos puntuacion
 
@@ -431,6 +408,8 @@ int main(void)
     //  Tabla_Records_Carga("juego.dat");
 
     //--------------------------------------------------------------------------------------
+
+    SetExitKey(SALIR);
 
     // Bucle Principal
     while (!WindowShouldClose())
@@ -446,6 +425,7 @@ int main(void)
             if (Color_Gradiente == 8) Color_Gradiente = 0;
         }
 
+        // Otro
         if (Menu == 0) 
         {
             if (Nave_Explota == 0) {
@@ -489,6 +469,7 @@ int main(void)
                         PlaySound(s_oleada);
                     }
                 }
+
                 if (Swarmer_Crea == 1) Swarmer_Crea_Enjambre(Swarmer_CreaX, Swarmer_CreaY);
                 Baiter_Tiempo -= 1;
                 if (Baiter_Tiempo < 1) {
@@ -769,8 +750,13 @@ int main(void)
 }
 
 
-void Inicia_Variables() {
+#pragma region DefinicionFunciones
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// D E F I N I C I O N E S
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+void Inicia_Variables() 
+{
     int valor, num;
 
     Pantalla_Largo = GetScreenWidth();
@@ -910,8 +896,6 @@ void Inicia_Variables() {
 
     Iniciales_Medida = (Pantalla_Largo - (Pantalla_X * 2)) / 13; // Medida recuadro android iniciales de texto
     InicialesX = 0;
-
-
 }
 
 
@@ -1004,8 +988,8 @@ void Restaura_Variables() {
 
 
 // Cada vez que el juego comienza:
-void Reinicia_Variables() {
-
+void Reinicia_Variables() 
+{
     Restaura_Variables();
 
     // Juego Nuevo
@@ -1082,8 +1066,8 @@ void Reinicia_Variables() {
 }
 
 
-void Tileado_Dibuja(Texture2D i_sprites) {
-
+void Tileado_Dibuja(Texture2D i_sprites) 
+{
     int i, y, valor;
     int x = Pantalla_X + (-Tile_Medida + Tile_Scroll) - Medida;
     int py;
@@ -1435,12 +1419,13 @@ int LoadStorageValue(unsigned int position) // Carga archivo
 }
 
 
-void Nave_Control(int num, Sound s_laser, Sound s_puntos, Sound s_bomba, Sound s_implosion, Font fuente) {
-
-
+void Nave_Control(int num, Sound s_laser, Sound s_puntos, Sound s_bomba, Sound s_implosion, Font fuente) 
+{
     int arriba = 0;
     int abajo = 0;
     int boton1 = 0;
+    bool izq = false;
+    bool der = false;
     int boton2 = 0;
     int boton3 = 0;
     int boton4 = 0;
@@ -1449,10 +1434,11 @@ void Nave_Control(int num, Sound s_laser, Sound s_puntos, Sound s_bomba, Sound s
     int tCount = 0;
     int cx, cy;
 
+    // Obtiene eventos
 
-    switch (num) {
-    case 1: // Joystick
-
+    switch (num) 
+    {
+    case 1: // Joystick Esto parece tactil
         tCount = GetTouchPointCount();
         if (tCount > MAX_TOUCH_POINTS) tCount = MAX_TOUCH_POINTS;
         for (int i = 0; i < tCount; ++i) touchPositions[i] = GetTouchPosition(i);
@@ -1521,36 +1507,36 @@ void Nave_Control(int num, Sound s_laser, Sound s_puntos, Sound s_bomba, Sound s
         break;
 
     default: // Teclado
-        if (IsKeyDown(KEY_UP)) {
+        if (IsKeyDown(SUBIR))
             arriba = 1;
-        }
-        if (IsKeyDown(KEY_DOWN)) {
+        if (IsKeyDown(BAJAR))
             abajo = 1;
-        }
-
-        // if (IsKeyDown(KEY_Z)) {
-        if (IsKeyDown(KEY_RIGHT)) {
-            //            if (IsKeyDown(KEY_LEFT_SHIFT)) {
+        if (IsKeyDown(DERECHA))
+        {
             boton1 = 1;
+            der = true;
+        }
+        if (IsKeyDown(IZQUIERDA))
+        {
+            boton1 = 1;
+            izq = true;
         }
 
-        if (IsKeyPressed(KEY_X)) cambia = 1;
+        if (IsKeyPressed(ORIENTACION)) cambia = 1;
 
-        if (IsKeyPressed(KEY_LEFT_CONTROL)) {
+        if (IsKeyPressed(DISPARAR))
             boton2 = 1;
-        }
 
-        if (IsKeyPressed(KEY_C) && Bombas > 0) { // Bomba
+        if (IsKeyPressed(BOMBA) && Bombas > 0)// Bomba
             boton3 = 1;
-        }
 
-        if (IsKeyPressed(KEY_SPACE)) {
+        if (IsKeyPressed(HIPERESPACIO))
             boton4 = 1;
-        }
 
         break;
     }
 
+    // Actualiza estado
 
     if (arriba == 1) {
         Nave_Y -= Nave_Ascenso;
@@ -1562,13 +1548,15 @@ void Nave_Control(int num, Sound s_laser, Sound s_puntos, Sound s_bomba, Sound s
         if (Nave_Y > Nave_Y2) Nave_Y = Nave_Y2;
     }
 
-
-    if (boton1 == 1) {
-        if (Nave_Direccion == 0) {
+    if ((der && Nave_Direccion == 0) || (izq && Nave_Direccion == 1) )
+    {
+        if (der && Nave_Direccion == 0)
+        {
             if (Nave_Velocidad < Medida3)  Nave_Velocidad += Medida3;
             Nave_Desplazamiento += Medida3;
         }
-        else {
+        else if (izq && Nave_Direccion == 1)
+        {
             if (Nave_Velocidad > -Medida3)  Nave_Velocidad -= Medida3;
             Nave_Desplazamiento -= Medida3;
         }
@@ -4302,3 +4290,7 @@ void Tabla_Records_Carga(const char* filename) {
 }
 
 */
+
+#pragma endregion
+
+
