@@ -62,6 +62,15 @@ static int Nave_Invulnerable = 0;
 // ------------------------------------------------------------------------------------------
 // Marcadores
 // ------------------------------------------------------------------------------------------
+
+#define STORAGE_RECORD_FILE ASSETS_PATH"record.dat" // Archivo para tabla de records
+#define RECORD_NUM 8
+
+typedef struct {
+    char iniciales[4];
+    unsigned int puntos;
+} Record;
+
 static int Puntos, Puntos_Extra;
 static char Puntos_Texto[32]; // Buffer para el texto
 
@@ -77,10 +86,10 @@ static char Iniciales_Nombre[NUM_INICIALES + 2] = "---"; // Resultado final
 static int Iniciales_Seleccion = 0;             // Posición de la inicial actual (0-2)
 static bool Iniciales_Terminado = false;
 static int Letras[NUM_INICIALES] = { 0, 0, 0 }; // Letras seleccionadas (0=A ... 25=Z)
-static char* TR_Nombres[9] = { "DRJ","SAM","LED","PGD","CRB","MRS","SSR","TMH", };
-int TR_Puntuacion[9] = { 21270,18315,15920,14285,12520,11035,8265,6010 };
 
-//static int distante;
+char* TR_Nombres[8] = { "DRJ","SAM","LED","PGD","CRB","MRS","SSR","TMH" };
+int TR_Puntuacion[8] = { 21270,18315,15920,14285,12520,11035,8265,6010 };
+
 
 
 // ------------------------------------------------------------------------------------------
@@ -270,8 +279,7 @@ static int Tile_N;
 int Tile[130][5];
 int Suelo[130][6];
 int Atlas[160][2];
-#define STORAGE_DATA_FILE   ASSETS_PATH"nivel.dat" // Archivo para tileado
-#define STORAGE_DATA_FILE2  ASSETS_PATH"juego.dat" // Archivo para tabla de records, datos ...
+#define STORAGE_LEVEL_FILE   ASSETS_PATH"nivel.dat" // Archivo para tileado
 
 
 // ------------------------------------------------------------------------------------------
@@ -304,8 +312,6 @@ void Palanca_Dibuja(Texture2D, int, int, int, int);
 
 int LoadStorageValue(unsigned int);
 int Ruta(int, int, int);
-//static bool Graba_Archivo(unsigned int position, int value);
-//static int Carga_Archivo(unsigned int position);
 
 void Humanoide_Crea(int, int);
 int Humanoide_Borra(int, int, int, Sound, Sound, Sound, Sound, Sound);
@@ -344,8 +350,6 @@ void Enemigos_Contabiliza(int, Sound, Sound, Sound, Sound, Sound);
 float GetRandomValueFloat(float, float);
 void Juego_Mas_Dificil(void);
 
-//void Tabla_Records_Carga( char*);
-//void Tabla_Records_Graba( char*);
 
 //------------------------------------------------------------------------------------
 // Variables para dibujo
@@ -363,9 +367,6 @@ static Vector2 touchPositions[MAX_TOUCH_POINTS] = { 0 };
 //-----------------------------------------------------------------------------
 int main(void)
 {
-    //SetConfigFlags(FLAG_MSAA_4X_HINT);
-    // No afecta a todo, la mejor opcion es FXAA con shaders
-    // Pero realmente hace falta? Con pixelado no hay diagonales que suavizar
     InitWindow(0, 0, "Defender");
     ToggleBorderlessWindowed();
     //ToggleFullscreen();
@@ -404,8 +405,6 @@ int main(void)
     Humanoide_Posiciona_Nivel(10);
     PlaySound(s_inicio);
 
-    //  Tabla_Records_Graba("juego.dat");
-    //  Tabla_Records_Carga("juego.dat");
 
     //--------------------------------------------------------------------------------------
 
@@ -1403,17 +1402,17 @@ int LoadStorageValue(unsigned int position) // Carga archivo
 {
     int value = 0;
     int dataSize = 0;
-    unsigned char* fileData = LoadFileData(STORAGE_DATA_FILE, &dataSize);
+    unsigned char* fileData = LoadFileData(STORAGE_LEVEL_FILE, &dataSize);
     if (fileData != NULL)
     {
-        if (dataSize < ((int)(position * 4))) TraceLog(LOG_WARNING, "FILEIO: [%s] Failed to find storage position: %i", STORAGE_DATA_FILE, position);
+        if (dataSize < ((int)(position * 4))) TraceLog(LOG_WARNING, "FILEIO: [%s] Failed to find storage position: %i", STORAGE_LEVEL_FILE, position);
         else
         {
             int* dataPtr = (int*)fileData;
             value = dataPtr[position];
         }
         UnloadFileData(fileData);
-        TraceLog(LOG_INFO, "FILEIO: [%s] Loaded storage value: %i", STORAGE_DATA_FILE, value);
+        TraceLog(LOG_INFO, "FILEIO: [%s] Loaded storage value: %i", STORAGE_LEVEL_FILE, value);
     }
     return value;
 }
@@ -1827,6 +1826,7 @@ void Palanca_Dibuja(Texture2D i_sprites, int x, int y, int x2, int y2) {
 
 }
 
+
 //----------------------------------------------------------
 // Crea humanoide
 //----------------------------------------------------------
@@ -1860,6 +1860,7 @@ void Humanoide_Crea(int cx, int cy) {
         }
     }
 }
+
 
 //----------------------------------------------------------
 // Borra humanoide con disparo nave jugador
@@ -1937,6 +1938,7 @@ int Humanoide_Borra(int d1, int dy, int dd, Sound s_implosion, Sound s_explosion
     }
     return 0;
 }
+
 
 //----------------------------------------------------------
 // Dibuja humanoides
@@ -2131,7 +2133,6 @@ void Humanoide_Dibuja(Texture2D i_sprites, Font fuente, Sound s_implosion, Sound
 }
 
 
-
 int Ruta(int x, int y, int dir) {
 
     int nlis = 0, salid = 0, azar = 0;
@@ -2173,7 +2174,6 @@ int Ruta(int x, int y, int dir) {
 }
 
 
-
 //----------------------------------------------------------
 // Crea Disparo Laser nave principal
 //----------------------------------------------------------
@@ -2197,7 +2197,6 @@ void Disparo_Crea(int x, int y) {
         }
     }
 }
-
 
 
 //----------------------------------------------------------
@@ -2293,11 +2292,6 @@ void Disparo_Dibuja(Texture2D i_sprites, Sound s_implosion, Sound s_explosion, S
 }
 
 
-
-
-
-
-
 void Humanoide_Posiciona_Nivel(int cantidad) {
     int azar, cuantos = 0;
 
@@ -2313,13 +2307,11 @@ void Humanoide_Posiciona_Nivel(int cantidad) {
                             cuantos += 1;
                         }
                     }
-
             }
         }
     }
-
-
 }
+
 
 //----------------------------------------------------------
 // Crea Enemigo
@@ -2966,7 +2958,6 @@ void Enemigo_Dibuja(Texture2D i_sprites, Sound s_abduce, Sound s_proyectil, Soun
 }
 
 
-
 //----------------------------------------------------------
 // Borra Enemigo con disparo
 //----------------------------------------------------------
@@ -3044,10 +3035,6 @@ int Enemigo_Borra(int d1, int dy, int dd, Sound s_implosion, Sound s_explosion, 
     }
     return 0;
 }
-
-
-
-
 
 
 //----------------------------------------------------------
@@ -3176,7 +3163,6 @@ void Explosion_Crea(float x, float y, int num, int modo, Sound s_implosion, Soun
         }
     }
 }
-
 
 
 //----------------------------------------------------------
@@ -3310,7 +3296,6 @@ void Abduce(Sound s_implosion, Sound s_explosion, Sound s_laser) {
 }
 
 
-
 void Puntos_Dibuja(Texture2D i_sprites) {
 
     float x;
@@ -3325,8 +3310,6 @@ void Puntos_Dibuja(Texture2D i_sprites) {
     Puntos_C += 1;
     if (Puntos_C > 200) Puntos_Activo = 0;
 }
-
-
 
 
 void Estrellas_Fondo_Dibuja() {
@@ -3385,7 +3368,6 @@ void Estrellas_Fondo_Dibuja() {
 }
 
 
-
 void Mundo_Explota(Sound s_implosion, Sound s_explosion, Sound s_laser, Sound s_bombardero, Sound s_pod) {
 
     int bumx = Scroll + GetRandomValue(0, Tile_Medida2);
@@ -3399,8 +3381,8 @@ void Mundo_Explota(Sound s_implosion, Sound s_explosion, Sound s_laser, Sound s_
 }
 
 
-void Lander_Mutante(int i) {
-
+void Lander_Mutante(int i) 
+{
     enemigos[i].estado = 0;
     enemigos[i].num = 2;
     enemigos[i].uvx = 176;
@@ -3415,8 +3397,6 @@ void Lander_Mutante(int i) {
     enemigos[i].manim = 1;
     enemigos[i].velocidadX = Tile_Medida16 * 0.7f;
     enemigos[i].velocidadY = Tile_Medida16;
-
-
 }
 
 
@@ -3459,12 +3439,10 @@ void Bomba_Inteligente(Font fuente, Sound s_implosion, Sound s_explosion, Sound 
 
                 }
                 Puntua(fuente, enemigos[i].puntos);
-
             }
         }
     }
 }
-
 
 
 void Hiper_Espacio_Dibuja(Texture2D i_sprites) { // Nave Jugador Retales
@@ -3520,9 +3498,7 @@ void Hiper_Espacio_Dibuja(Texture2D i_sprites) { // Nave Jugador Retales
             Imagen_Dibuja(i_sprites, nx, ny, Medidas[2], Medidas[2], uvx + m, uvy + n, 2, 2, 1, 0); // retales
         }
     }
-
 }
-
 
 
 //----------------------------------------------------------
@@ -3540,13 +3516,9 @@ void Particulas_Explosion(float x, float y) {
 }
 
 
-
 //----------------------------------------------------------
 // Dibuja Explosion Nave Jugador
 //----------------------------------------------------------
-
-
-
 void Particulas_Dibuja(Font fuente, Sound s_laser, Sound s_implosion, Sound s_explosion, Sound s_bomba, Sound s_caida, Sound s_bombardero, Sound s_inicio, Sound s_puntos, Sound s_pod) {
     int Vgameover = 0;
 
@@ -3617,15 +3589,8 @@ void Particulas_Dibuja(Font fuente, Sound s_laser, Sound s_implosion, Sound s_ex
             if (IsSoundPlaying(s_implosion)) StopSound(s_implosion);
             if (IsSoundPlaying(s_caida)) StopSound(s_caida);
         }
-
-
-
     }
-
 }
-
-
-
 
 
 //----------------------------------------------------------
@@ -3774,6 +3739,7 @@ void Swarmer_Crea_Enjambre(float x, float y) {
     Swarmer_Crea = 0;
 
 }
+
 
 void Menu_Dibuja(Font fuente, Texture2D i_sprites, Sound s_inicio, Sound s_comenzar, Sound s_humanoide) {
 
@@ -3925,7 +3891,6 @@ void Menu_Dibuja(Font fuente, Texture2D i_sprites, Sound s_inicio, Sound s_comen
 
 #pragma endregion
 
-
     case 3: // Graba iniciales tabla de records
 
 #pragma region Iniciales Records
@@ -4024,7 +3989,7 @@ void Menu_Dibuja(Font fuente, Texture2D i_sprites, Sound s_inicio, Sound s_comen
                     TR_Nombres[kpos] = Iniciales_Nombre;
                 }
                 // Aqui deberia grabar la tabla de records
-                //   Tabla_Records_Graba("juego.dat");
+                //Tabla_Records_Graba("record.dat");
             }
         }
 
@@ -4153,33 +4118,7 @@ void Menu_Dibuja(Font fuente, Texture2D i_sprites, Sound s_inicio, Sound s_comen
 
     }
 
-
-
-
-
-
-
 }
-
-/*static char* textos[MAX_TEXTOS] = { "ATTACK WAVE  ",
-                                    "COMPLETED",
-                                    "BONUS X 100",
-                                    "HALL OF FAME",
-                                    "TODAYS",
-                                    "GREATEST",
-                                    "ALL TIME",
-                                    "LANDER",
-                                    "MUTANT",
-                                    "BAITER",
-                                    "BOMBER",
-                                    "POD",
-                                    "SWARMER",
-                                    "SCANNER",
-                                    "ELECTRONICS INC.",
-                                    "PRESENTS",
-                                    "GAME OVER",
-                                    "",
-                                    "",*/
 
 
 void Enemigos_Contabiliza(int modo, Sound s_implosion, Sound s_explosion, Sound s_laser, Sound s_bombardero, Sound s_pod) {
@@ -4265,31 +4204,9 @@ void Juego_Mas_Dificil() {
 }
 
 
-/*
-void Tabla_Records_Graba(const char* filename) {
-
-    FILE* f = fopen(filename, "wb");
-    if (f) {
-        fwrite(TR_Nombres, sizeof(TR_Nombres), 1, f);
-        fwrite(TR_Puntuacion, sizeof(TR_Puntuacion), 1, f);
-        fclose(f);
-    }
-
-}
 
 
-void Tabla_Records_Carga(const char* filename) {
 
-    FILE* f = fopen(filename, "rb");
-    if (f) {
-        fread(TR_Nombres, sizeof(TR_Nombres), 1, f);
-        fread(TR_Puntuacion, sizeof(TR_Puntuacion), 1, f);
-        fclose(f);
-    }
-
-}
-
-*/
 
 #pragma endregion
 
