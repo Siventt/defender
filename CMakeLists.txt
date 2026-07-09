@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.22)
 project(defender C)
 set(CMAKE_C_STANDARD 99)
 
@@ -28,9 +28,6 @@ add_executable(${PROJECT_NAME})
 target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_INCLUDE})
 target_link_libraries(${PROJECT_NAME} PRIVATE raylib)
-
-# Establece la macro ASSETS_PATH como una ruta relativa que asume que la carpeta assets se encuentra en el mismo directorio que el ejecutable
-target_compile_definitions(${PROJECT_NAME} PUBLIC ASSETS_PATH="./assets/")
 
 # Define la carpeta destino para los ejecutables del proyecto
 set_target_properties(${PROJECT_NAME} PROPERTIES
