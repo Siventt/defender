@@ -32,11 +32,13 @@ static int Pantalla_BombaT;
 // ----------------------------------------------------------------------------
 // Medidas
 // ----------------------------------------------------------------------------
+
 // Para tileado
 static float Tile_Medida, Tile_Medida2, Tile_Medida3, Tile_Scroll, Tile_Medida16,
-             Tile_Monte, Tile_Medida_Monte, Tile_Medida_Monte16, Tile_Monte_Fin; 
+             Tile_Monte, Tile_Medida_Monte, Tile_Medida_Monte16, Tile_Monte_Fin;
+
 // Medidas para Naves y Enemigos, Marcadores, disparos, explosiones
-static float Medida, Medida2, Medida3, Medida4;; 
+static float Medida, Medida2, Medida3, Medida4;
 static float Scroll, Scroll_Fin, Radar_M;
 static int Marcador_X, Marcador_Y, Marcador_Altura, Marcador_Largo;
 static int Radar_X, Radar_Largo, Radar_Alto, 
@@ -362,6 +364,12 @@ static Vector2 origin;
 
 static Vector2 touchPositions[MAX_TOUCH_POINTS] = { 0 };
 
+//------------------------------------------------------------------------------------
+// Debug
+//------------------------------------------------------------------------------------
+static bool pausado = 0;
+
+
 #pragma endregion
 
 //-----------------------------------------------------------------------------
@@ -379,7 +387,9 @@ int main(void)
 
     // ASSETS_PATH es una macro definida en CMakeLists.txt para crear una ruta dinámica.
     Font fuente = LoadFont(ASSETS_PATH"i_fuente.png");
+
     Texture2D i_sprites = LoadTexture(ASSETS_PATH"i_sprites.png");
+
     Sound s_abduce = LoadSound(ASSETS_PATH"sounds/s_abduce.wav");
     Sound s_bomba = LoadSound(ASSETS_PATH"sounds/s_bomba.wav");
     Sound s_bombardero = LoadSound(ASSETS_PATH"sounds/s_bombardero.wav");
@@ -406,211 +416,218 @@ int main(void)
     //   Puntos = 18000; Menu = 3;
     Humanoide_Posiciona_Nivel(10);
     PlaySound(s_inicio);
-
-
-    //--------------------------------------------------------------------------------------
-
+    
     SetExitKey(SALIR);
+    //--------------------------------------------------------------------------------------
 
     // Bucle Principal
     while (!WindowShouldClose())
     {
-        // Animaciones
-        //---------------------------------------------------------------------------------------------------------
-        Frame_c += 1;
-        if (Frame_c == 5) { // Velocidad de animacion
-            Frame_c = 0;
-            Frame += 16;
-            if (Frame == 48) Frame = 0;
-            Color_Gradiente += 1;
-            if (Color_Gradiente == 8) Color_Gradiente = 0;
-        }
-
-        // Otro
-        if (Menu == 0) 
+        if (IsKeyPressed(PAUSA))
         {
-            if (Nave_Explota == 0) {
+            pausado = !pausado;
+            Nave_Invulnerable = 1;
+        }
+        
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        //   A C T U A L I Z A D O
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        if(!pausado)
+        {
+            // Animaciones
+            //---------------------------------------------------------------------------------------------------------
+            Frame_c += 1;
+            if (Frame_c == 5) { // Velocidad de animacion
+                Frame_c = 0;
+                Frame += 16;
+                if (Frame == 48) Frame = 0;
+                Color_Gradiente += 1;
+                if (Color_Gradiente == 8) Color_Gradiente = 0;
+            }
 
-                // Enemigos
-                //---------------------------------------------------------------------------------------------------------
-                // Intenta Abducir Humanoides
-                if (Humanoides_R > 0) { // Humanoides en estado de reposo
-                    if (Humanoide_Abducido == 0) Abduce(s_implosion, s_explosion, s_laser);
-                }
-
-                // Genera oleadas
-                if (OleadaC < 30) {
-                    int oleN = Oleada_Total;
-                    if (oleN > 4) oleN = 4;
-                    Juego_E += 1;
-                    if (Juego_E > Juego_E_Fin) {
-                        Juego_E = 0;
-                        for (int r = 0; r < 5; r++) {
-                            int kmalo = Ola[(oleN - 1)][(OleadaC + r)];
-                            if (kmalo > 0) {
-                                if (kmalo == 1 && Mundo_Aniquilado == 1) kmalo = 2; // Mutante
-                                Explosion_Crea(GetRandomValue(1, 2060), GetRandomValue(Marcador_Y, Tile_Monte), kmalo, 1, s_implosion, s_explosion, s_laser, s_bombardero, s_pod);
-                            }
-                        }
-                        OleadaC += 5;
-                    }
-
-                }
-                else { // No hay mas oleadas de enemigos
-                    if (Enemigos_N < 1) {
-                        Menu = 1; // Oleada Completada
-                        Humanoide_Rellena = 0;
-                        Humanoide_RellenaC = 0;
-                        if (IsSoundPlaying(s_laser)) StopSound(s_laser);
-                        if (IsSoundPlaying(s_bomba)) StopSound(s_bomba);
-                        if (IsSoundPlaying(s_bombardero)) StopSound(s_bombardero);
-                        if (IsSoundPlaying(s_implosion)) StopSound(s_implosion);
-                        if (IsSoundPlaying(s_explosion)) StopSound(s_explosion);
-                        if (IsSoundPlaying(s_caida)) StopSound(s_caida);
-                        PlaySound(s_oleada);
-                    }
-                }
-
-                if (Swarmer_Crea == 1) Swarmer_Crea_Enjambre(Swarmer_CreaX, Swarmer_CreaY);
-                Baiter_Tiempo -= 1;
-                if (Baiter_Tiempo < 1) {
-                    Baiter_Tiempo = Baiter_Tiempo_Fin;
-                    Explosion_Crea(GetRandomValue(1, 2063), GetRandomValue(Marcador_Y + Tile_Medida, Tile_Monte), 3, 1, s_implosion, s_explosion, s_laser, s_bombardero, s_pod);
-                }
-
-                // Control Nave
-                //---------------------------------------------------------------------------------------------------------
-                if (Nave_Hiper_Espacio == 0) {
-
-                    Nave_Control(Joystick, s_laser, s_puntos, s_bomba, s_implosion, fuente);
-
-                    // Bomba / Mundo Explota
+            // Otro
+            if (Menu == 0) 
+            {
+                if (Nave_Explota == 0)
+                {
+                    // Enemigos
                     //---------------------------------------------------------------------------------------------------------
-                    if (Pantalla_Bomba == 1) {
-                        Pantalla_BombaC += 1;
-                        if (Pantalla_BombaC > (Pantalla_BombaT / 2)) {
-                            if (Pantalla_BombaE == 0) { // Bomba Inteligente
-                                Bomba_Inteligente(fuente, s_explosion, s_implosion, s_laser, s_caida, s_bombardero, s_pod);
+                    // Intenta Abducir Humanoides
+                    if (Humanoides_R > 0) { // Humanoides en estado de reposo
+                        if (Humanoide_Abducido == 0) Abduce(s_implosion, s_explosion, s_laser);
+                    }
+
+                    // Genera oleadas
+                    if (OleadaC < 30) {
+                        int oleN = Oleada_Total;
+                        if (oleN > 4) oleN = 4;
+                        Juego_E += 1;
+                        if (Juego_E > Juego_E_Fin) {
+                            Juego_E = 0;
+                            for (int r = 0; r < 5; r++) {
+                                int kmalo = Ola[(oleN - 1)][(OleadaC + r)];
+                                if (kmalo > 0) {
+                                    if (kmalo == 1 && Mundo_Aniquilado == 1) kmalo = 2; // Mutante
+                                    Explosion_Crea(GetRandomValue(1, 2060), GetRandomValue(Marcador_Y, Tile_Monte), kmalo, 1, s_implosion, s_explosion, s_laser, s_bombardero, s_pod);
+                                }
                             }
-                            else {
-                                if (Mundo_Aniquilado == 0) {
-                                    Mundo_Destruido = 0; Mundo_Aniquilado = 1; // Ya no hay Montañas
-                                    for (int i = 0; i < Enemigos_Maximos; i++) {
-                                        if (enemigos[i].num == 1) Lander_Mutante(i);
+                            OleadaC += 5;
+                        }
+
+                    }
+                    else { // No hay mas oleadas de enemigos
+                        if (Enemigos_N < 1) {
+                            Menu = 1; // Oleada Completada
+                            Humanoide_Rellena = 0;
+                            Humanoide_RellenaC = 0;
+                            if (IsSoundPlaying(s_laser)) StopSound(s_laser);
+                            if (IsSoundPlaying(s_bomba)) StopSound(s_bomba);
+                            if (IsSoundPlaying(s_bombardero)) StopSound(s_bombardero);
+                            if (IsSoundPlaying(s_implosion)) StopSound(s_implosion);
+                            if (IsSoundPlaying(s_explosion)) StopSound(s_explosion);
+                            if (IsSoundPlaying(s_caida)) StopSound(s_caida);
+                            PlaySound(s_oleada);
+                        }
+                    }
+
+                    if (Swarmer_Crea == 1) Swarmer_Crea_Enjambre(Swarmer_CreaX, Swarmer_CreaY);
+                    Baiter_Tiempo -= 1;
+                    if (Baiter_Tiempo < 1) {
+                        Baiter_Tiempo = Baiter_Tiempo_Fin;
+                        Explosion_Crea(GetRandomValue(1, 2063), GetRandomValue(Marcador_Y + Tile_Medida, Tile_Monte), 3, 1, s_implosion, s_explosion, s_laser, s_bombardero, s_pod);
+                    }
+
+                    // Control Nave
+                    //---------------------------------------------------------------------------------------------------------
+                    if (Nave_Hiper_Espacio == 0) {
+
+                        Nave_Control(Joystick, s_laser, s_puntos, s_bomba, s_implosion, fuente);
+
+                        // Bomba / Mundo Explota
+                        //---------------------------------------------------------------------------------------------------------
+                        if (Pantalla_Bomba == 1) {
+                            Pantalla_BombaC += 1;
+                            if (Pantalla_BombaC > (Pantalla_BombaT / 2)) {
+                                if (Pantalla_BombaE == 0) { // Bomba Inteligente
+                                    Bomba_Inteligente(fuente, s_explosion, s_implosion, s_laser, s_caida, s_bombardero, s_pod);
+                                }
+                                else {
+                                    if (Mundo_Aniquilado == 0) {
+                                        Mundo_Destruido = 0; Mundo_Aniquilado = 1; // Ya no hay Montañas
+                                        for (int i = 0; i < Enemigos_Maximos; i++) {
+                                            if (enemigos[i].num == 1) Lander_Mutante(i);
+                                        }
                                     }
                                 }
                             }
+                            if (Pantalla_BombaC > Pantalla_BombaT) Pantalla_Bomba = 0; // Termina Bomba
+                            Pantalla_BombaCF += 1;
+                            if (Pantalla_BombaCF > 3) {
+                                Pantalla_BombaCF = 0;
+                                Pantalla_Bomba_Modo = 1 - Pantalla_Bomba_Modo;
+                                if (Pantalla_BombaE == 1)  Mundo_Explota(s_implosion, s_explosion, s_laser, s_bombardero, s_pod);
+                            }
                         }
-                        if (Pantalla_BombaC > Pantalla_BombaT) Pantalla_Bomba = 0; // Termina Bomba
-                        Pantalla_BombaCF += 1;
-                        if (Pantalla_BombaCF > 3) {
-                            Pantalla_BombaCF = 0;
-                            Pantalla_Bomba_Modo = 1 - Pantalla_Bomba_Modo;
-                            if (Pantalla_BombaE == 1)  Mundo_Explota(s_implosion, s_explosion, s_laser, s_bombardero, s_pod);
+
+                        // Scroll
+                        //---------------------------------------------------------------------------------------------------------
+                        Scroll += Nave_Velocidad;// Montañas 0-2064 (129 tiles x 16 pixeles ) = 2064 pixeles
+                        Tile_Scroll -= Nave_Velocidad * Tile_Medida16;
+                        if (Tile_Scroll < Tile_Medida) {
+                            Tile_Scroll += Tile_Medida;
+                            Tile_N += 1;
                         }
-                    }
+                        if (Tile_Scroll > Tile_Medida) {
+                            Tile_Scroll -= Tile_Medida;
+                            Tile_N -= 1;
+                        }
+                        if (Tile_N > 128)  Tile_N = 0;// Limites
+                        if (Tile_N < 0)  Tile_N = 128;
+                        if (Scroll > 2064) Scroll -= 2064;
+                        if (Scroll < 0) Scroll += 2064;
 
-                    // Scroll
-                    //---------------------------------------------------------------------------------------------------------
-                    Scroll += Nave_Velocidad;// Montañas 0-2064 (129 tiles x 16 pixeles ) = 2064 pixeles
-                    Tile_Scroll -= Nave_Velocidad * Tile_Medida16;
-                    if (Tile_Scroll < Tile_Medida) {
-                        Tile_Scroll += Tile_Medida;
-                        Tile_N += 1;
                     }
-                    if (Tile_Scroll > Tile_Medida) {
-                        Tile_Scroll -= Tile_Medida;
-                        Tile_N -= 1;
-                    }
-                    if (Tile_N > 128)  Tile_N = 0;// Limites
-                    if (Tile_N < 0)  Tile_N = 128;
-                    if (Scroll > 2064) Scroll -= 2064;
-                    if (Scroll < 0) Scroll += 2064;
-
                 }
             }
+            //---------------------------------------------------------------------------------------------------------
+
+            //casillax = (Tile_N + ((raton.x - Tile_Scroll) / Tile_Medida)) + IndiceX;
+            //if (casillax > 129) casillax -= 129;
+            //casillay = (raton.y - Tile_Monte) / Tile_Medida_Monte;
+            /*
+            if (IsKeyPressed(   )) {
+                //            Enemigo_Crea(2, Scroll, GetRandomValue(Marcador_Y + Tile_Medida2, Pantalla_Alto - Tile_Medida2));
+                Enemigo_Crea(5, GetRandomValue(1, 2000), Pantalla_MitadY);
+            }*/
+
+            // Captura de pantalla
+            //---------------------------------------------------------------------------------------------------------
+            if (IsKeyPressed(SCREENSHOT)) {
+                TakeScreenshot("captura.png");
+            }
+
+            /*
+            if (IsKeyPressed(   )) {
+                Nave_Explota = 1;
+                Nave_Velocidad = 0;
+                Humanos_old = Humanoides_N;
+                PlaySound(s_explosion);
+            }
+            */
         }
-        //---------------------------------------------------------------------------------------------------------
 
-
-        //casillax = (Tile_N + ((raton.x - Tile_Scroll) / Tile_Medida)) + IndiceX;
-        //if (casillax > 129) casillax -= 129;
-        //casillay = (raton.y - Tile_Monte) / Tile_Medida_Monte;
-        /*
-        if (IsKeyPressed(KEY_E)) {
-            //            Enemigo_Crea(2, Scroll, GetRandomValue(Marcador_Y + Tile_Medida2, Pantalla_Alto - Tile_Medida2));
-            Enemigo_Crea(5, GetRandomValue(1, 2000), Pantalla_MitadY);
-        }*/
-
-        // Captura de pantalla
-        //---------------------------------------------------------------------------------------------------------
-        if (IsKeyPressed(KEY_S)) {
-            TakeScreenshot("captura.png");
-        }
-
-        if (IsKeyPressed(KEY_E)) {
-            Nave_Explota = 1;
-            Nave_Velocidad = 0;
-            Humanos_old = Humanoides_N;
-            PlaySound(s_explosion);
-        }
-
-        //---------------------------------------------------------------------------------------------------------
-        //---------------------------------------------------------------------------------------------------------
-        //      D I B U J A
-        //---------------------------------------------------------------------------------------------------------
-        //---------------------------------------------------------------------------------------------------------
-
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        //   D I B U J A D O
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         BeginDrawing();
 
-
-
-        if (Menu == 0) {
-
-
-            if (Pantalla_Bomba == 0) {
+        if (Menu == 0) 
+        {
+            if (Pantalla_Bomba == 0)
                 ClearBackground(BLACK);
-            }
-            else {
-                if (Pantalla_Bomba_Modo == 0) {
-                    if (Pantalla_BombaE == 0) {
+            else 
+            {
+                if (Pantalla_Bomba_Modo == 0)
+                {
+                    if (Pantalla_BombaE == 0)
                         ClearBackground(WHITE);
-                    }
-                    else {
+                    else
                         ClearBackground(Gradiente[Color_Gradiente]);
-                    }
                 }
-                else {
+                else
                     ClearBackground(BLACK);
-                }
             }
-
 
             // Dibuja Estrellas
             Estrellas_Fondo_Dibuja();
 
             // Dibuja Montañas
-            if (Mundo_Aniquilado == 0) Tileado_Dibuja(i_sprites);//
-
+            if (Mundo_Aniquilado == 0) 
+                Tileado_Dibuja(i_sprites);
 
             // Dibuja Enemigos
             Enemigo_Dibuja(i_sprites, s_abduce, s_proyectil, s_implosion, s_explosion, s_laser, s_bombardero, s_humanoide, s_pod);
 
-
             // Dibuja Nave
-            if (Nave_Hiper_Espacio == 0) {
+            if (Nave_Hiper_Espacio == 0) 
+            {
                 if (Nave_Explota > 0) {
                     if (Nave_Explota < 40) {
                         Imagen_Dibuja(i_sprites, Nave_X + Nave_Desplazamiento, Nave_Y, Nave_Medida, Nave_Medida2, 272 + Frame, 16, 15, 6, 1, Nave_Direccion);
                     }
                 }
-                else {
-
+                else 
+                {
+                    // Sprite Normal Nave
                     Imagen_Dibuja(i_sprites, Nave_X + Nave_Desplazamiento, Nave_Y, Nave_Medida, Nave_Medida2, 64 + Frame, 0, 15, 6, 1, Nave_Direccion);
-
+                    // Sprite Fogonazo Motor
+                    Imagen_Dibuja(i_sprites, Nave_X + Nave_Desplazamiento - 20 * Tile_Medida16, Nave_Y - 2 * Tile_Medida16, Nave_Medida, Nave_Medida2, 208 + Frame, 32, 16, 8, 0, Nave_Direccion);
+                    
+                    // DrawRectangleLines(Nave_X + Nave_Desplazamiento - 20 * Tile_Medida16, Nave_Y - 2 * Tile_Medida16, Nave_Medida, Nave_Medida2, RED);
                 }
 
-                if (Humanoide_Enganchado == 1) {
+                if (Humanoide_Enganchado == 1) 
+                {
                     Imagen_Dibuja(i_sprites, Nave_X + Nave_Desplazamiento, Nave_Y + Tile_Medida2, Medidas[3], Medidas[8], 209, 241, 3, 8, 1, 0);
                 }
 
@@ -620,10 +637,9 @@ int main(void)
             }
 
 
-
             // Dibuja Puntos (cuando rescatas a humanoide)
-            if (Puntos_Activo == 1) Puntos_Dibuja(i_sprites);
-
+            if (Puntos_Activo == 1) 
+                Puntos_Dibuja(i_sprites);
 
 
             // Dibuja Humanoides
@@ -639,16 +655,12 @@ int main(void)
             Explosiones_Dibuja(i_sprites);
 
 
-
-
             // Dibuja Explosion nave jugador
-            if (Nave_Explota > 0)  Particulas_Dibuja(fuente, s_laser, s_implosion, s_explosion, s_bomba, s_caida, s_bombardero, s_inicio, s_puntos, s_pod);
-
+            if (Nave_Explota > 0)
+                Particulas_Dibuja(fuente, s_laser, s_implosion, s_explosion, s_bomba, s_caida, s_bombardero, s_inicio, s_puntos, s_pod);
 
             // Marcadores
             Marcador_Dibuja(i_sprites, fuente);
-
-
 
         }
         else {
@@ -659,12 +671,16 @@ int main(void)
         }
 
         // Mascara
-        if (Pantalla_Completa == 0) {
+        if (Pantalla_Completa == 0) 
+        {
             DrawRectangle(0, 0, Pantalla_X, Pantalla_Alto, BLACK);
             DrawRectangle(Pantalla_X2, 0, Pantalla_X, Pantalla_Alto, BLACK);
         }
-        if ((Palanca_Boton[0] == 1) && Menu == 0) Palanca_Dibuja(i_sprites, PalancaX, PalancaY, BolaX, BolaY);
 
+        if ((Palanca_Boton[0] == 1) && Menu == 0) 
+            Palanca_Dibuja(i_sprites, PalancaX, PalancaY, BolaX, BolaY);
+
+        /*  Cosas para debugear
         //Dibuja_Regiones();
 
         //     DrawText(TextFormat("Juego_E %i", Juego_E), Pantalla_X, Marcador_Y + Tile_Medida2, 30, BLUE);
@@ -678,14 +694,14 @@ int main(void)
 
         //     DrawText(TextFormat("Nave_Explota %i", Nave_Explota), Pantalla_X, Marcador_Y + Tile_Medida2, 30, BLUE);
 
-        /*
+    
         DrawText(TextFormat("old_lander %i", old_lander), Pantalla_X, Marcador_Y + (Tile_Medida2 ), 30, BLUE);
         DrawText(TextFormat("old_mutante %i", old_mutante), Pantalla_X, Marcador_Y + (Tile_Medida2 * 2), 30, BLUE);
         DrawText(TextFormat("old_baiter %i", old_baiter), Pantalla_X, Marcador_Y + (Tile_Medida2 * 3), 30, BLUE);
         DrawText(TextFormat("old_bombardero %i", old_bombardero), Pantalla_X, Marcador_Y + (Tile_Medida2 * 4), 30, BLUE);
         DrawText(TextFormat("old_pod %i", old_pod), Pantalla_X, Marcador_Y + (Tile_Medida2 * 5), 30, BLUE);
         DrawText(TextFormat("old_swarmer %i", old_swarmer), Pantalla_X, Marcador_Y + (Tile_Medida2 * 6), 30, BLUE);
-        */
+        
         //        Dibuja_Regiones();
         //      DrawText(TextFormat("casillax %i", casillax), Pantalla_X, Marcador_Y+Tile_Medida2, 30, BLUE);
         //      DrawText(TextFormat("casillay %i", casillay), Pantalla_X, Marcador_Y+Tile_Medida, 30, GREEN);
@@ -693,7 +709,7 @@ int main(void)
         //    DrawText(TextFormat("PalancaD %i", PalancaD), Pantalla_X, Marcador_Y+Tile_Medida2, 30, BLUE);
         //    DrawText(TextFormat("Angle: %.2f radians", PalancaA), Pantalla_X2, Marcador_Y+Tile_Medida2, 30, GREEN);
         //        DrawText(TextFormat("PalancaO %i", PalancaO), 30, 230, 30, BLUE);
-        /*
+        
         DrawText(TextFormat("Enemigos_N %i", Enemigos_N), Pantalla_X, Marcador_Y + Tile_Medida2, 30, BLUE);
         DrawText(TextFormat("Humanoides_N %i", Humanoides_N), Pantalla_X, Marcador_Y + Tile_Medida, 30, BLUE);
         DrawText(TextFormat("Humanoides_R %i", Humanoides_R), Pantalla_X, Marcador_Y + Tile_Medida * 2, 30, BLUE);
@@ -701,28 +717,24 @@ int main(void)
         DrawText(TextFormat("Enemigo_Abductor %i", Enemigo_Abductor), Pantalla_X + (Tile_Medida * 4), Marcador_Y + Tile_Medida2, 30, GREEN);
         DrawText(TextFormat("Humanoide_Abducido %i", Humanoide_Abducido), Pantalla_X + (Tile_Medida * 4), Marcador_Y + Tile_Medida, 30, GREEN);
         DrawText(TextFormat("Humanoide_Enganchado %i", Humanoide_Enganchado), Pantalla_X + (Tile_Medida * 4), Marcador_Y + Tile_Medida+Tile_Medida2, 30, PINK);
-        */
+        
 
         // Limites para nave
-        /*
+        
         DrawLine(Nave_X1, 0, Nave_X1, Pantalla_Alto, RED);
         DrawLine(Nave_X2, 0, Nave_X2, Pantalla_Alto, RED);
         DrawLine(Nave_X3, 0, Nave_X3, Pantalla_Alto, BLUE);
         DrawLine(Nave_X4, 0, Nave_X4, Pantalla_Alto, RED);
-        */
-
-
-
+        
 
 
         //   DrawLine(Pantalla_MitadX, 0, Pantalla_MitadX, Pantalla_Alto, GREEN);
         //   DrawText(TextFormat("Oleada %i", Oleada), Pantalla_X, Marcador_Y + Tile_Medida2, 30, BLUE);
         //   DrawText(TextFormat("Oleada_Total %i", Oleada_Total), Pantalla_X, Marcador_Y + Tile_Medida, 30, BLUE);
-
+        */
 
         EndDrawing();
         //----------------------------------------------------------------------------------
-
     }
 
     // De-Inicialización
@@ -1112,8 +1124,8 @@ void Tileado_Dibuja(Texture2D i_sprites)
 }
 
 
-void Imagen_Dibuja(Texture2D i_sprites, int x, int y, int largo, int alto, int uvx, int uvy, int uvlargo, int uvalto, int centrado, int espejo) {
-
+void Imagen_Dibuja(Texture2D i_sprites, int x, int y, int largo, int alto, int uvx, int uvy, int uvlargo, int uvalto, int centrado, int espejo) 
+{
     Color pinta = WHITE;
 
     if (centrado == 1) {
@@ -3869,7 +3881,12 @@ void Menu_Dibuja(Font fuente, Texture2D i_sprites, Sound s_inicio, Sound s_comen
         //      break;
 
         //   default:
-        if ((IsKeyPressed(KEY_SPACE)) || (IsKeyPressed(KEY_ENTER)) || (IsKeyPressed(KEY_LEFT_CONTROL))) { termina = 1; Joystick = 0; }
+        if ((IsKeyPressed(HIPERESPACIO)) || (IsKeyPressed(DISPARAR)) || (IsKeyPressed(SUBIR))) 
+        { 
+            termina = 1; 
+            Joystick = 0; 
+        }
+        
         //        break;
 
 
@@ -3902,15 +3919,15 @@ void Menu_Dibuja(Font fuente, Texture2D i_sprites, Sound s_inicio, Sound s_comen
 
         if (!Iniciales_Terminado)
         {
-            if (IsKeyPressed(KEY_UP))
+            if (IsKeyPressed(SUBIR))
             {
                 Letras[Iniciales_Seleccion] = (Letras[Iniciales_Seleccion] + 1) % 26;
             }
-            if (IsKeyPressed(KEY_DOWN))
+            if (IsKeyPressed(BAJAR))
             {
                 Letras[Iniciales_Seleccion] = (Letras[Iniciales_Seleccion] - 1 + 26) % 26;
             }
-            if (IsKeyPressed(KEY_SPACE))
+            if (IsKeyPressed(HIPERESPACIO))
             {
                 // Confirmar la letra actual y pasar a la siguiente
                 Iniciales_Nombre[Iniciales_Seleccion] = 'A' + Letras[Iniciales_Seleccion];

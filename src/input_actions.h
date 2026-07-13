@@ -1,9 +1,14 @@
-#define SUBIR        KEY_UP
-#define BAJAR        KEY_DOWN
-#define IZQUIERDA    KEY_LEFT
-#define DERECHA      KEY_RIGHT
-#define ORIENTACION  KEY_X
-#define DISPARAR     KEY_LEFT_CONTROL
-#define BOMBA        KEY_C
+#define SUBIR        KEY_W
+#define BAJAR        KEY_S
+#define IZQUIERDA    KEY_A
+#define DERECHA      KEY_D
+#define ORIENTACION  KEY_L
+#define DISPARAR     KEY_J
+#define BOMBA        KEY_K
 #define HIPERESPACIO KEY_SPACE
 #define SALIR        KEY_ESCAPE
+
+// DEBUG
+#define DEBUG        KEY_F1
+#define SCREENSHOT   KEY_F12
+#define PAUSA        KEY_P
