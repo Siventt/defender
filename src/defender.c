@@ -11,22 +11,22 @@
 
 #define ORIGINAL_ALTO  240
 #define ORIGINAL_ANCHO 292
-#define ORIGINAL_TESELA 16
-#define ORIGINAL_Y_TESELA 15
-#define ORIGINAL_X_TESELA 18 // Para 1920x1080 serian 30
+#define ORIGINAL_TILE 16
+#define ORIGINAL_Y_TILE 15
+#define ORIGINAL_X_TILE 18
 
 typedef struct {
-    int pixel;
-    int tesela; // 16 pixels
+    int tesela; // Dimensiones de una tesela en pixeles
+    int tile; // Dimensiones de un tile en pixeles
+    int y_tileS[ORIGINAL_Y_TILE]; // Hay 15 tiles por columna
+    int x_tileS[ORIGINAL_X_TILE]; // Hay 18 tiles por fila
 
-    int y_tesela[ORIGINAL_Y_TESELA]; // Hay 15 teselas por columna
-    int x_tesela[ORIGINAL_X_TESELA]; // Hay 18 teselas por fila
-
+    
 } Medida;
 
-void IniciarMedidas(Medida *medida);
+void CalcularMedidas(Medida *medidas);
 
-void DibujarInterfaz(Medida *medida);
+void DibujarInterfaz(Medida *medidas);
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // P R I N C I P A L
@@ -50,7 +50,7 @@ int main()
 
     Medida medidas;
     
-    IniciarMedidas(&medidas);
+    CalcularMedidas(&medidas);
 
     //
 
@@ -59,19 +59,17 @@ int main()
         BeginDrawing();
         ClearBackground(BLACK);
 
-
-
         
 
         DibujarInterfaz(&medidas);
 
         // Dibuja la cuadricula
-        for(int i = 0; i < ORIGINAL_X_TESELA; i++)
-            for(int j = 0; j < ORIGINAL_Y_TESELA; j++)
-                DrawRectangleLines(medidas.x_tesela[i], medidas.y_tesela[j], medidas.tesela, medidas.tesela, RED);
+        for(int i = 0; i < ORIGINAL_X_TILE; i++)
+            for(int j = 0; j < ORIGINAL_Y_TILE; j++)
+                DrawRectangleLines(medidas.x_tileS[i], medidas.y_tileS[j], medidas.tile, medidas.tile, RED);
 
-        // Dibuja solo una tesela
-        //DrawRectangleLines(0, medidas.y_tesela[1], medidas.tesela, medidas.tesela, GREEN);
+        // Dibuja solo un tile
+        DrawRectangleLines(0, medidas.y_tileS[1], medidas.tile, medidas.tile, GREEN);
 
         EndDrawing();
     }
@@ -85,29 +83,26 @@ int main()
 // Definiciones
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-void IniciarMedidas(Medida *medidas)
+void CalcularMedidas(Medida *medidas)
 {
-    medidas->pixel = GetScreenHeight() / ORIGINAL_ALTO;
-    medidas->tesela = medidas->pixel * ORIGINAL_TESELA;
-
-    for (int i = 0; i < ORIGINAL_Y_TESELA; i++)
-        medidas->y_tesela[i] = medidas->tesela * i;
-
-    for (int i = 0; i < ORIGINAL_X_TESELA; i++)
-        medidas->x_tesela[i] = medidas->tesela * i;
-
+    medidas->tile = GetScreenHeight() / ORIGINAL_Y_TILE; // Se asume medida vertical menor
+    medidas->tesela = medidas->tile / ORIGINAL_TILE;
+    for (int i = 0; i < ORIGINAL_Y_TILE; i++)
+        medidas->y_tileS[i] = medidas->tile * i;
+    for (int i = 0; i < ORIGINAL_X_TILE; i++)
+        medidas->x_tileS[i] = medidas->tile * i;
 }
 
 
 void DibujarInterfaz(Medida *medidas)
 {
     // Linea horizontal
-    DrawLineEx((Vector2){0, medidas->y_tesela[2] + medidas->pixel*2}, 
-               (Vector2){medidas->x_tesela[17] + medidas->tesela, medidas->y_tesela[2] + medidas->pixel*2}, 
-               medidas->pixel*2, DARKBLUE);
+    DrawLineEx((Vector2){0, medidas->y_tileS[2] + medidas->tesela*2}, 
+               (Vector2){medidas->x_tileS[17] + medidas->tesela, medidas->y_tileS[2] + medidas->tesela*2}, 
+               medidas->tesela*2, DARKBLUE);
 
     // Recuadro del minimapa
-    DrawRectangleLinesEx((Rectangle){medidas->x_tesela[5] + medidas->pixel*2, -medidas->pixel, 
-                                     medidas->tesela*8, medidas->tesela*2 + medidas->pixel*4}, 
-                         medidas->pixel*2, DARKBLUE);
+    DrawRectangleLinesEx((Rectangle){medidas->x_tileS[5] + medidas->tesela*2, -medidas->tesela, 
+                                     medidas->tile*8, medidas->tile*2 + medidas->tesela*4}, 
+                         medidas->tesela*2, DARKBLUE);
 }
